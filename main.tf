@@ -52,8 +52,8 @@ resource "azurerm_container_service" "k8sexample" {
   }
 
   service_principal {
-    client_id     = "${var.azure_client_id}"
-    client_secret = "${var.azure_client_secret}"
+    client_id     = "${data.vault_generic_secret.azure_credentials.data["client_id"]}"
+    client_secret = "${data.vault_generic_secret.azure_credentials.data["client_secret"]}"
   }
 
   diagnostics_profile {
