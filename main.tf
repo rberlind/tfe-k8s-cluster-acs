@@ -15,7 +15,7 @@ data "vault_generic_secret" "azure_credentials" {
 provider "azurerm" {
   subscription_id = "${data.vault_generic_secret.azure_credentials.data["subscription_id"]}"
   tenant_id       = "${data.vault_generic_secret.azure_credentials.data["tenant_id"]}"
-  client_id       = "${data.vault_generic_secret.azure_credentials.data[client_id"]}"
+  client_id       = "${data.vault_generic_secret.azure_credentials.data["client_id"]}"
   client_secret   = "${data.vault_generic_secret.azure_credentials.data["client_secret"]}"
 }
 
