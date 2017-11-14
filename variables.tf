@@ -1,19 +1,3 @@
-variable "azure_subscription_id" {
-  description = "Azure Subscription ID"
-}
-
-variable "azure_tenant_id" {
-  description = "Azure Tenant ID"
-}
-
-variable "azure_client_id" {
-  description = "Azure Client ID"
-}
-
-variable "azure_client_secret" {
-  description = "Azure Client Secret"
-}
-
 variable "dns_master_prefix" {
   description = "DNS prefix for the master nodes of your cluster"
 }
