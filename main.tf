@@ -73,7 +73,7 @@ resource "azurerm_container_service" "k8sexample" {
 
 resource "null_resource" "get_config" {
   provisioner "local-exec" {
-    command = "echo ${chomp(tls_private_key.ssh_key.private_key_pem)} > private_key.pem"
+    command = "echo '${chomp(tls_private_key.ssh_key.private_key_pem)}' > private_key.pem"
   }
   provisioner "local-exec" {
     command = "chmod 600 private_key.pem"
