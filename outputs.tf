@@ -11,13 +11,13 @@ output "acs_master_fqdn" {
 }
 
 output "k8s_master_auth_client_certificate" {
-  value = "${null_data_source.get_certs.outputs["client_certificate"]}"
+  value = "${data.null_data_source.get_certs.outputs["client_certificate"]}"
 }
 
 output "k8s_master_auth_client_key" {
-  value = "${null_data_source.get_certs.outputs["client_key"]}"
+  value = "${data.null_data_source.get_certs.outputs["client_key"]}"
 }
 
 output "k8s_master_auth_cluster_ca_certificate" {
-  value = "${null_data_source.get_certs.outputs["ca_certificate"]}"
+  value = "${data.null_data_source.get_certs.outputs["ca_certificate"]}"
 }
