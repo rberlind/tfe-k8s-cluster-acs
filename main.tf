@@ -82,13 +82,13 @@ resource "null_resource" "get_config" {
     command = "scp -o StrictHostKeyChecking=no -i private_key.pem azureuser@${lookup(azurerm_container_service.k8sexample.master_profile[0], "fqdn")}:~/.kube/config config"
   }
   provisioner "local-exec" {
-    command = "sed -n 6,6p config | cut -d '"' -f 2 > ca_certificate"
+    command = "sed -n 6,6p config | cut -d '\"' -f 2 > ca_certificate"
   }
   provisioner "local-exec" {
-    command = "sed -n 19,19p config | cut -d '"' -f 2 > client_certificate"
+    command = "sed -n 19,19p config | cut -d '\"' -f 2 > client_certificate"
   }
   provisioner "local-exec" {
-    command = "sed -n 20,20p config | cut -d '"' -f 2 > client_key"
+    command = "sed -n 20,20p config | cut -d '\"' -f 2 > client_key"
   }
 }
 
