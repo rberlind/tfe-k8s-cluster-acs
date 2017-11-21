@@ -82,14 +82,39 @@ resource "null_resource" "get_config" {
     command = "scp -o StrictHostKeyChecking=no -i private_key.pem azureuser@${lookup(azurerm_container_service.k8sexample.master_profile[0], "fqdn")}:~/.kube/config config"
   }
   provisioner "local-exec" {
-    command = "cat config"
+    command = "sed -n 6,6p config | cut -d '"' -f 2 > ca_certificate"
   }
-  depends_on = ["azurerm_container_service.k8sexample"]
+  provisioner "local-exec" {
+    command = "sed -n 19,19p config | cut -d '"' -f 2 > client_certificate"
+  }
+  provisioner "local-exec" {
+    command = "sed -n 20,20p config | cut -d '"' -f 2 > client_key"
+  }
 }
 
-/*resource "null_resource" "auth_config" {
-  provisioner "local-exec" {
-    command = "curl --header \"X-Vault-Token: $VAULT_TOKEN\" --header \"Content-Type: application/json\" --request POST --data '{ \"kubernetes_host\": \"https://${lookup(azurerm_container_service.k8sexample.master_profile[0], "fqdn")}:443\", \"token_reviewer_jwt\": \"reviewer_service_account_jwt\", \"kubernetes_ca_cert\": \"${chomp(replace(base64decode(google_container_cluster.k8sexample.master_auth.0.cluster_ca_certificate), "\n", "\\n"))}\" }' $VAULT_ADDR/v1/auth/${vault_auth_backend.k8s.path}config"
+data "null_data_source" "get_certs" {
+  inputs = {
+    client_certificate = "${file("client_certificate")}"
+    client_key = "${file("client_key")}"
+    ca_certificate = "${file("ca_certificate")}"
   }
   depends_on = ["null_resource.get_config"]
-}*/
+}
+
+resource "null_resource" "auth_config" {
+  provisioner "local-exec" {
+    command = "curl --header \"X-Vault-Token: $VAULT_TOKEN\" --header \"Content-Type: application/json\" --request POST --data '{ \"kubernetes_host\": \"https://${lookup(azurerm_container_service.k8sexample.master_profile[0], "fqdn")}:443\", \"token_reviewer_jwt\": \"reviewer_service_account_jwt\", \"kubernetes_ca_cert\": \"${chomp(replace(base64decode(null_data_source.get_certs.outputs["ca_certificate"]), "\n", "\\n"))}\" }' $VAULT_ADDR/v1/auth/${vault_auth_backend.k8s.path}config"
+  }
+}
+
+resource "vault_generic_secret" "role" {
+  path = "auth/${vault_auth_backend.k8s.path}/role/demo"
+  data_json = <<EOT
+  {
+    "bound_service_account_names": "cats-and-dogs",
+    "bound_service_account_namespaces": "default",
+    "policies": "admins",
+    "ttl": "2h"
+  }
+  EOT
+}
