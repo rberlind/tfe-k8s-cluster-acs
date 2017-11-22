@@ -23,5 +23,5 @@ output "k8s_master_auth_cluster_ca_certificate" {
 }
 
 output "vault-k8s-auth-backend" {
-  value = "${vault_auth_backend.k8s.path}"
+  value = "${replace(vault_auth_backend.k8s.path, "/", "")}"
 }
