@@ -1,5 +1,5 @@
 terraform {
-  required_version = ">= 0.10.1"
+  required_version = ">= 0.11.0"
 }
 
 resource "tls_private_key" "ssh_key" {
@@ -10,6 +10,12 @@ provider "vault" {}
 
 data "vault_generic_secret" "azure_credentials" {
   path = "secret/azure/credentials"
+}
+
+resource "vault_auth_backend" "k8s" {
+  type = "kubernetes"
+  path = "acs-${var.environment}"
+  description = "Vault Auth backend for Kubernetes"
 }
 
 provider "azurerm" {
@@ -63,4 +69,55 @@ resource "azurerm_container_service" "k8sexample" {
   tags {
     Environment = "${var.environment}"
   }
+}
+
+resource "null_resource" "get_config" {
+  provisioner "local-exec" {
+    command = "echo '${chomp(tls_private_key.ssh_key.private_key_pem)}' > private_key.pem"
+  }
+  provisioner "local-exec" {
+    command = "chmod 600 private_key.pem"
+  }
+  provisioner "local-exec" {
+    command = "sleep 120"
+  }
+  provisioner "local-exec" {
+    command = "scp -o StrictHostKeyChecking=no -i private_key.pem azureuser@${lookup(azurerm_container_service.k8sexample.master_profile[0], "fqdn")}:~/.kube/config config"
+  }
+  provisioner "local-exec" {
+    command = "sed -n 6,6p config | cut -d '\"' -f 2 > ca_certificate"
+  }
+  provisioner "local-exec" {
+    command = "sed -n 19,19p config | cut -d '\"' -f 2 > client_certificate"
+  }
+  provisioner "local-exec" {
+    command = "sed -n 20,20p config | cut -d '\"' -f 2 > client_key"
+  }
+}
+
+data "null_data_source" "get_certs" {
+  inputs = {
+    client_certificate = "${file("client_certificate")}"
+    client_key = "${file("client_key")}"
+    ca_certificate = "${file("ca_certificate")}"
+  }
+  depends_on = ["null_resource.get_config"]
+}
+
+resource "null_resource" "auth_config" {
+  provisioner "local-exec" {
+    command = "curl --header \"X-Vault-Token: $VAULT_TOKEN\" --header \"Content-Type: application/json\" --request POST --data '{ \"kubernetes_host\": \"https://${lookup(azurerm_container_service.k8sexample.master_profile[0], "fqdn")}:443\", \"token_reviewer_jwt\": \"reviewer_service_account_jwt\", \"kubernetes_ca_cert\": \"${chomp(replace(base64decode(data.null_data_source.get_certs.outputs["ca_certificate"]), "/\\r\n/", "\\n"))}\" }' $VAULT_ADDR/v1/auth/${vault_auth_backend.k8s.path}config"
+  }
+}
+
+resource "vault_generic_secret" "role" {
+  path = "auth/${vault_auth_backend.k8s.path}/role/demo"
+  data_json = <<EOT
+  {
+    "bound_service_account_names": "cats-and-dogs",
+    "bound_service_account_namespaces": "default",
+    "policies": "admins",
+    "ttl": "2h"
+  }
+  EOT
 }

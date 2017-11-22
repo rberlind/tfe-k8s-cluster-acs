@@ -3,7 +3,7 @@ variable "dns_master_prefix" {
 }
 
 variable "dns_agent_pool_prefix" {
-  description = "DNS prefix for the agent nodes of your cluster"
+  description = "DNS prefix for the agent nodes of your ACS cluster"
 }
 
 variable "azure_location" {
