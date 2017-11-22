@@ -1,8 +1,5 @@
 terraform {
-  required_version = ">= 0.10.1"
-  backend "atlas" {
-    name = "RogerBerlind/k8s-cluster-acs-dev"
-  }
+  required_version = ">= 0.11.0"
 }
 
 resource "tls_private_key" "ssh_key" {
