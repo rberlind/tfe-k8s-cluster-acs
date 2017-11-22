@@ -79,7 +79,10 @@ resource "null_resource" "get_config" {
     command = "chmod 600 private_key.pem"
   }
   provisioner "local-exec" {
-    command = "scp -o StrictHostKeyChecking=no -i private_key.pem -v azureuser@${lookup(azurerm_container_service.k8sexample.master_profile[0], "fqdn")}:~/.kube/config config"
+    command = "sleep 120"
+  }
+  provisioner "local-exec" {
+    command = "scp -o StrictHostKeyChecking=no -i private_key.pem azureuser@${lookup(azurerm_container_service.k8sexample.master_profile[0], "fqdn")}:~/.kube/config config"
   }
   provisioner "local-exec" {
     command = "sed -n 6,6p config | cut -d '\"' -f 2 > ca_certificate"
