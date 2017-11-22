@@ -21,3 +21,7 @@ output "k8s_master_auth_client_key" {
 output "k8s_master_auth_cluster_ca_certificate" {
   value = "${data.null_data_source.get_certs.outputs["ca_certificate"]}"
 }
+
+output "vault-k8s-auth-backend" {
+  value = "${vault_auth_backend.k8s.path}"
+}
