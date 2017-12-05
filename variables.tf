@@ -13,7 +13,6 @@ variable "azure_location" {
 
 variable "resource_group_name" {
   description = "Azure Resource Group Name"
-  default = "k8sexample-acs"
 }
 
 variable "master_vm_count" {
@@ -53,5 +52,9 @@ variable "diagnostics_enabled" {
 
 variable "environment" {
   description = "value passed to ACS Environment tag"
-  default = ""
+  default = "dev"
+}
+
+variable "vault_user" {
+  description = "Vault userid: determines location of secrets and affects path of k8s auth backend"
 }
