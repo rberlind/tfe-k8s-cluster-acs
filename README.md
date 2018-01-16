@@ -24,4 +24,4 @@ You will see outputs representing the URL to access your ACS cluster in the Azur
 ## Cleanup
 Execute the following command to delete your Kubernetes cluster and associated resources from ACS.
 
-1. Run `terraform destroy -var-file="k8s.tfvars"` to destroy the ACS cluster and other resources that were provisioned by Terraform.
+1. Run `terraform destroy -var-file="k8s.tfvars"` to destroy the ACS cluster and other resources that were provisioned by Terraform. Done.
